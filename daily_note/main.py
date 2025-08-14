@@ -14,6 +14,7 @@ import requests
 import datetime
 from pathlib import Path
 import os
+import sys
 MOODS = {
     1:"Miserable",
     2:"Sad",
@@ -60,18 +61,29 @@ def main(
     title: str = typer.Argument(help="Title",default=None),
     mood: int = typer.Argument(help="Mood 1-5", default=None),
     energy: int = typer.Argument(help="Energy 1-5", default=None),
-    location_title: str = typer.Argument(help="Location Title", default=None)
+    location_title: str = typer.Argument(help="Location Title", default=None),
+    quick_entry: bool = typer.Option(False, "--quick", "-q", help="Quick entry without prompts"),
 ):
-    if title == None:
-        title = typer.prompt("Title of the diary entry")
-    if mood == None:
-        mood = select_mood()
-    if energy == None:
-        energy = select_energy()
-    if location_title == None:
-        location_title = typer.prompt("Location Title")
-    # title = input("Title: ")
     date = datetime.date.today().isoformat()
+
+    if quick_entry:
+        logging.debug("Quick entry mode enabled. Skipping prompts.")
+        title = "Quick Entry - " + date  # Default title for quick entry
+        # Default mood and energy values for quick entry
+        mood =  3  # Default mood to "Okay"
+        energy = 3  # Default energy to "Okay"
+        location_title =  "Somewhere"  # Default location title
+    else:
+        logging.debug("Quick entry mode not enabled. Prompts will be used.")
+        if title == None:
+            title = typer.prompt("Title of the diary entry")
+        if mood == None:
+            mood = select_mood()
+        if energy == None:
+            energy = select_energy()
+        if location_title == None:
+            location_title = typer.prompt("Location Title")
+    # title = input("Title: ")
     filename = datetime.date.today().isoformat()
     wttr_data = get_wttr_json()
     city = wttr_data['nearest_area'][0]['areaName'][0]['value']
@@ -105,29 +117,30 @@ filename: {date}.md
 
 # {title}
 
----------------------------------------------------------------
 
 """
     # Diary entry END
-
-    # Add a check and confirmation if the file is already created
-    if filename.exists():
-        logging.warning(f"File {filename} already exists.")
-        confirm = typer.confirm("File already exists. Do you want to overwrite it?")
-        if not confirm:
-            logging.info("Exiting without changes.")
-            open_file(filename)
-            raise typer.Abort()
-        else:
-            logging.info(f"Overwriting existing diary entry: {filename}")
-            filename.write_text(entry_body)
+    if quick_entry:
+        print(entry_body)
     else:
-        logging.info(f"Creating new diary entry: {filename}")
-        filename.write_text(entry_body)
+        # Add a check and confirmation if the file is already created
+        if filename.exists():
+            logging.warning(f"File {filename} already exists.")
+            confirm = typer.confirm("File already exists. Do you want to overwrite it?")
+            if not confirm:
+                logging.info("Exiting without changes.")
+                open_file(filename)
+                raise typer.Abort()
+            else:
+                logging.info(f"Overwriting existing diary entry: {filename}")
+                filename.write_text(entry_body)
+        else:
+            logging.info(f"Creating new diary entry: {filename}")
+            filename.write_text(entry_body)
 
-    print(f"Diary entry created: \n{filename}")
-    open_file(filename)
-    exit(0)
+        print(f"Diary entry created: \n{filename}")
+        open_file(filename)
+    sys.exit(0)
 
 if __name__ == "__main__":
     typer.run(main)
