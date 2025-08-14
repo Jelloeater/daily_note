@@ -1,8 +1,135 @@
 [project]
-name = "diary"
+name = "daily_note"
 version = "0.1.0"
-description = "Add your description here"
-requires-python = ">=3.13"
+description = ""
+readme = "README.md"
+requires-python = ">=3.10,<3.12"
 dependencies = [
-    "pymarkdownlnt>=0.9.30",
+    "requests",
+    "typer",
+]
+
+[project.scripts]
+daily-note = "main:main"
+
+[tool.pdm.build]
+includes = ["daily-note"]
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+
+######### BUILD TOOLING BELOW, IMPORTANT STUFF ABOVE ######################
+###########################################################################
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = "test_main.py"
+log_cli = true
+log_cli_level = "DEBUG"
+log_cli_format = "[%(asctime)s] [%(levelname)8s] --- %(message)s (%(filename)s:%(funcName)s():%(lineno)s)"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+addopts = "-vvv --cov=main --cov-fail-under=75" # --typeguard-packages={{.BUILD_DIR}} # Leave typeguard off for now
+
+[tool.black]
+line-length = 120
+skip-string-normalization = true
+
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py312"
+src = ["."]
+extend-exclude = [
+    "__pycache__",
+    "build",
+    "dist",
+]
+
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
+
+
+[tool.ruff.lint]
+# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+select = [
+    "E", # pycodestyle errors (settings from FastAPI, thanks, @tiangolo!)
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "C", # flake8-comprehensions
+    "B", # flake8-bugbear
+    "S", # flake8-bandit
+    "Q", # flake8-quotes
+    "N", # pep8-naming
+    #"D", # pydocstyle
+    "C90", # mccabe
+    "ERA", # eradicate
+    "SIM", # flake8-simplify
+    "UP",  # pyupgrade
+    "PT", # flake8-pytest-style
+    "PLR", # Refactor (PLR)
+    "PLW", # Warning (PLW)
+    "FURB", # refurb (FURB)
+    "RUF", # Ruff-specific rules (RUF)
+
+]
+ignore = [
+    # "E501", # line too long, handled by black
+    # "C901", # too complex
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+
+[tool.tartufo]
+repo-path = "."
+regex = true
+entropy = true
+exclude-path-patterns = [
+    {path-pattern = 'pyproject\.toml'},
+]
+exclude-entropy-patterns = [
+    {path-pattern = '\.github/workflows/.*\.yml', pattern = 'uses: .*@[a-zA-Z0-9]{40}', reason = 'GitHub Actions'},
+    {path-pattern = 'README\.md', pattern = '.'},
+    {path-pattern = 'mapping\.cfg', pattern = '.'}, # Git secret
+]
+
+[tool.vulture]
+exclude = ["test_main"]
+ignore_decorators = ["@app.route", "@require_*"]
+ignore_names = []
+make_whitelist = true
+min_confidence = 80
+paths = ["src",]
+sort_by_size = true
+verbose = false
+
+[tool.mypy]
+files = ["main",]
+strict = "true"
+
+[dependency-groups]
+dev = [
+    "setuptools",
+    "pytest",
+    "pytest-cov",
+    "pytest-pycharm",
+    "python-dotenv",
+    "typing-extensions",
 ]

@@ -14,7 +14,20 @@ import requests
 import datetime
 from pathlib import Path
 import os
-MOODS = ["1-😭", "2-😞", "3-😑", "4-🙂", "5-🥰"]
+MOODS = {
+    1:"Miserable",
+    2:"Sad",
+    3:"Okay",
+    4:"Happy",
+    5:"Joyful"
+}
+ENERGY = {
+    1:"Exhausted",
+    2:"Tired",
+    3:"Okay",
+    4:"Active",
+    5:"Buzzing"
+}
 
 
 def get_wttr_json():
@@ -22,11 +35,12 @@ def get_wttr_json():
 
 # Mood selector
 def select_mood():
-    print("Mood: ")
-    for i, mood in enumerate(MOODS, 1):
-        print(f"{mood}")
-    choice = int(typer.prompt("Mood choice")) - 1
-    return MOODS[choice] if 0 <= choice < len(MOODS) else MOODS[0]
+    return int(typer.prompt(f"Mood choice {MOODS}"))
+
+# Mood selector
+def select_energy():
+    return int(typer.prompt(f"Energy {ENERGY}: "))
+
 
 def open_file(filepath):
     import platform
@@ -44,13 +58,16 @@ def open_file(filepath):
 
 def main(
     title: str = typer.Argument(help="Title",default=None),
-    mood: str = typer.Argument(help="Mood", default=None),
+    mood: int = typer.Argument(help="Mood 1-5", default=None),
+    energy: int = typer.Argument(help="Energy 1-5", default=None),
     location_title: str = typer.Argument(help="Location Title", default=None)
-    ):
+):
     if title == None:
         title = typer.prompt("Title of the diary entry")
     if mood == None:
         mood = select_mood()
+    if energy == None:
+        energy = select_energy()
     if location_title == None:
         location_title = typer.prompt("Location Title")
     # title = input("Title: ")
@@ -74,13 +91,16 @@ title: {title}
 date: {date}
 tags: []
 mood: {mood}
+mood_desc: {MOODS.get(mood)}
+energy: {energy}
+energy_desc: {ENERGY.get(energy)}
 location: {location}
 location_title: {location_title}
 city: {city}
 weather: {weather}
 temp_c: {temp_c}
 forecast: {forecast}
-filename: {date}
+filename: {date}.md
 ---
 
 # {title}
