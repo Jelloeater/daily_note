@@ -1,20 +1,16 @@
-#!/usr/bin/env -S uv run --quiet
-# /// script
-# requires-python = ">=3.10"
-# dependencies = [
-#     "requests",
-#     "typer",
-# ]
-# ///
-
+#!/usr/bin/env python3
 import logging
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-import typer
-import requests
 import datetime
-from pathlib import Path
 import os
 import sys
+from pathlib import Path
+
+import requests
+import typer
+
+# Globals
 MOODS = {
     1:"Miserable",
     2:"Sad",
