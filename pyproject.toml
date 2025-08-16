@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [project.scripts]
-daily-note = "daily_note:main"
+daily-note = "main:main"
 
 [tool.pdm.build]
 includes = ["daily_note"]
